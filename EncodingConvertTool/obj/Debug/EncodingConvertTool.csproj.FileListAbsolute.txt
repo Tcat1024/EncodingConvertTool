@@ -1,0 +1,9 @@
+C:\Users\Tcat\Desktop\WorkSpace\Program\EncodingConvertTool\EncodingConvertTool\bin\Debug\EncodingConvertTool.exe
+C:\Users\Tcat\Desktop\WorkSpace\Program\EncodingConvertTool\EncodingConvertTool\bin\Debug\EncodingConvertTool.pdb
+C:\Users\Tcat\Desktop\WorkSpace\Program\EncodingConvertTool\EncodingConvertTool\obj\Debug\EncodingConvertTool.csprojResolveAssemblyReference.cache
+C:\Users\Tcat\Desktop\WorkSpace\Program\EncodingConvertTool\EncodingConvertTool\obj\Debug\EncodingConvertTool.MainForm.resources
+C:\Users\Tcat\Desktop\WorkSpace\Program\EncodingConvertTool\EncodingConvertTool\obj\Debug\EncodingConvertTool.Properties.Resources.resources
+C:\Users\Tcat\Desktop\WorkSpace\Program\EncodingConvertTool\EncodingConvertTool\obj\Debug\EncodingConvertTool.SaveMessageBox.resources
+C:\Users\Tcat\Desktop\WorkSpace\Program\EncodingConvertTool\EncodingConvertTool\obj\Debug\EncodingConvertTool.csproj.GenerateResource.Cache
+C:\Users\Tcat\Desktop\WorkSpace\Program\EncodingConvertTool\EncodingConvertTool\obj\Debug\EncodingConvertTool.exe
+C:\Users\Tcat\Desktop\WorkSpace\Program\EncodingConvertTool\EncodingConvertTool\obj\Debug\EncodingConvertTool.pdb
