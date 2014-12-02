@@ -145,7 +145,7 @@
             // btnBatPro
             // 
             this.btnBatPro.Name = "btnBatPro";
-            this.btnBatPro.Size = new System.Drawing.Size(120, 24);
+            this.btnBatPro.Size = new System.Drawing.Size(162, 24);
             this.btnBatPro.Text = "批处理";
             this.btnBatPro.Click += new System.EventHandler(this.btnBatPro_Click);
             // 

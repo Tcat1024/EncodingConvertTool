@@ -19,7 +19,7 @@ namespace EncodingConvertTool
             InitializeComponent();
             foreach (var item in items)
                 this.comboMode.Items.Add(item);
-            this.comboMode.Items.Add("还原");
+            this.comboMode.Items.Add("还原模式");
             this.comboMode.SelectedIndex = 0;
             this.comboType.Items.AddRange(typelist);
             this.comboType.SelectedIndex = 0;
@@ -93,19 +93,28 @@ namespace EncodingConvertTool
             } 
             int count = this.clbTypeList.Items.Count;
             List<string> selectedtypes = new List<string>();
-            for (int i = 1; i < count; i++)
-            {
-                if (this.clbTypeList.GetItemChecked(i))
+            if(this.comboMode.Text!="还原模式")
+                for (int i = 1; i < count; i++)
                 {
-                    selectedtypes.Add(this.clbTypeList.Items[i].ToString());
+                    if (this.clbTypeList.GetItemChecked(i))
+                    {
+                        selectedtypes.Add("*" + this.clbTypeList.Items[i].ToString());
+                    }
                 }
-            }
+            else
+                for (int i = 1; i < count; i++)
+                {
+                    if (this.clbTypeList.GetItemChecked(i))
+                    {
+                        selectedtypes.Add("*" + this.clbTypeList.Items[i].ToString()+".bak");
+                    }
+                }
             if(selectedtypes.Count<1)
             {
                 MessageBox.Show("未选择任何文件类型");
                 return;
             }
-            if (convertThread != null && convertThread.ThreadState != ThreadState.Aborted)
+            if (convertThread != null && convertThread.ThreadState != ThreadState.Aborted && convertThread.ThreadState != ThreadState.Stopped)
                 abortConvertThread();
             convertThread = new Thread(convertThreadMethod);
             convertThread.IsBackground = true;
@@ -125,7 +134,7 @@ namespace EncodingConvertTool
         {
             this.panel1.Enabled = true;
             progressBar1.Visible = false;
-            MessageBox.Show("转换了" + cc + "个文件");
+            MessageBox.Show("转换了" + currentCount + "个文件");
         }
         private void convertThreadMethod(object option)
         {
@@ -133,147 +142,83 @@ namespace EncodingConvertTool
             try
             {
                 this.Invoke(new Action(convertStartInit));
-                cc = 0;
-                string temp = "";
+                currentCount = 0;
                 string result = "";
                 string file = "";
-                List<string> filters = new List<string>();
-                if (convertoption.EncodeConvertMode.ToString() != "还原")
+                string originname;
+                string tempname;
+                Action convertmethod;
+                targetfiles = convertoption.TypeList.SelectMany(g => Directory.EnumerateFiles(convertoption.RootPath, g, SearchOption.AllDirectories)).ToList();
+                if (waitThread != null && waitThread.ThreadState != ThreadState.Aborted)
+                    waitThread.Abort();
+                (waitThread = new Thread(waitThreadMethod)).Start(targetfiles.Count);
+                if (convertoption.EncodeConvertMode.ToString() == "还原模式")
                 {
-                    foreach(var type in convertoption.TypeList)
-                    {
-                        filters.Add("*" + type);
-                    }
-                    targetfiles = filters.SelectMany(g => Directory.EnumerateFiles(convertoption.RootPath, g, SearchOption.AllDirectories)).ToList();
-                    if (waitThread != null && waitThread.ThreadState != ThreadState.Aborted)
-                        waitThread.Abort();
-                    (waitThread = new Thread(waitThreadMethod)).Start(targetfiles.Count);
                     if (convertoption.BackUp)
                     {
-                        for(int i = 0;i<targetfiles.Count;)
+                        convertmethod = () =>
                         {
-                            lock (cancelHandle)
+                            originname = file.Substring(0, file.Length - 4);
+                            if (File.Exists(originname))
                             {
-                                try
-                                {
-                                    file = targetfiles[i];
-                                    temp = FileMethod.OpenFile(file);
-                                    result = (convertoption.EncodeConvertMode as EncodeConvertMode).Convert(temp, convertoption.EncodeType as EncodeType, convertoption.Intelligence);
-                                    FileMethod.RenameFile(file, file + ".bak");
-                                    FileMethod.SaveFile(file, result);
-                                    cc++;
-                                    i++;
-                                }
-                                catch(Exception ex)
-                                {
-                                    switch(MessageBox.Show("处理文件\"" + file + "\"时出现异常:\n" + ex.Message,"注意",MessageBoxButtons.AbortRetryIgnore))
-                                    {
-                                        case System.Windows.Forms.DialogResult.Ignore: i++; continue;
-                                        case System.Windows.Forms.DialogResult.Retry: continue;
-                                        case System.Windows.Forms.DialogResult.Abort: break;
-                                    }
-                                }
+                                tempname = Path.GetTempFileName();
+                                FileMethod.RenameFile(originname, tempname);
+                                FileMethod.RenameFile(file, originname);
+                                FileMethod.RenameFile(tempname, file);
                             }
-                        }
+                            else
+                                FileMethod.RenameFile(file, originname);
+                        };
                     }
                     else
                     {
-                        for (int i = 0; i < targetfiles.Count; )
+                        convertmethod = () =>
                         {
-                            lock (cancelHandle)
-                            {
-                                try
-                                {
-                                    file = targetfiles[i];
-                                    temp = FileMethod.OpenFile(file);
-                                    result = (convertoption.EncodeConvertMode as EncodeConvertMode).Convert(temp, convertoption.EncodeType as EncodeType, convertoption.Intelligence);
-                                    FileMethod.SaveFile(file, result);
-                                    cc++;
-                                    i++;
-                                }
-                                catch (Exception ex)
-                                {
-                                    switch (MessageBox.Show("处理文件\"" + file + "\"时出现异常:\n" + ex.Message, "注意", MessageBoxButtons.AbortRetryIgnore))
-                                    {
-                                        case System.Windows.Forms.DialogResult.Ignore: i++; continue;
-                                        case System.Windows.Forms.DialogResult.Retry: continue;
-                                        case System.Windows.Forms.DialogResult.Abort: break;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                            originname = file.Substring(0, file.Length - 4);
+                            FileMethod.RenameFile(file, originname);
+                        };
+                    }                
                 }
                 else
                 {
-                    foreach (var type in convertoption.TypeList)
-                    {
-                        filters.Add("*" + type + ".bak");
-                    }
-                    targetfiles = filters.SelectMany(g => Directory.EnumerateFiles(convertoption.RootPath, g, SearchOption.AllDirectories)).ToList();
-                    if (waitThread != null && waitThread.ThreadState != ThreadState.Aborted)
-                        waitThread.Abort();
-                    (waitThread = new Thread(waitThreadMethod)).Start(targetfiles.Count);
-                    string originname;
-                    string tempname;
                     if (convertoption.BackUp)
                     {
-                        for (int i = 0; i < targetfiles.Count; )
+                        convertmethod = () =>
                         {
-                            lock (cancelHandle)
-                            {
-                                try
-                                {
-                                    file = targetfiles[i];
-                                    originname = file.Substring(0, file.Length - 4);
-                                    if (File.Exists(originname))
-                                    {
-                                        tempname = Path.GetTempFileName();
-                                        FileMethod.RenameFile(originname, tempname);
-                                        FileMethod.RenameFile(file, originname);
-                                        FileMethod.RenameFile(tempname, file);
-                                    }
-                                    else
-                                        FileMethod.RenameFile(file, originname);
-                                    cc++;
-                                    i++;
-                                }
-                                catch (Exception ex)
-                                {
-                                    switch (MessageBox.Show("处理文件\"" + file + "\"时出现异常:\n" + ex.Message, "注意", MessageBoxButtons.AbortRetryIgnore))
-                                    {
-                                        case System.Windows.Forms.DialogResult.Ignore: i++; continue;
-                                        case System.Windows.Forms.DialogResult.Retry: continue;
-                                        case System.Windows.Forms.DialogResult.Abort: break;
-                                    }
-                                }
-                            }
-                        }
+                            result = (convertoption.EncodeConvertMode as EncodeConvertMode).Convert(FileMethod.OpenFile(file), convertoption.EncodeType as EncodeType, convertoption.Intelligence);
+                            FileMethod.RenameFile(file, file + ".bak");
+                            FileMethod.SaveFile(file, result);
+                        };
                     }
                     else
                     {
-                        for (int i = 0; i < targetfiles.Count; )
+                        convertmethod = () =>
                         {
-                            lock (cancelHandle)
+                            result = (convertoption.EncodeConvertMode as EncodeConvertMode).Convert(FileMethod.OpenFile(file), convertoption.EncodeType as EncodeType, convertoption.Intelligence);
+                            FileMethod.SaveFile(file, result);
+                        };
+                    }
+                }
+                for (int i = 0; i < targetfiles.Count; )
+                {
+                    lock (cancelHandle)
+                    {
+                        try
+                        {
+                            file = targetfiles[i];
+                            convertmethod();
+                            currentCount++;
+                            i++;
+                        }
+                        catch (Exception ex)
+                        {
+                            switch (MessageBox.Show("处理文件\"" + file + "\"时出现异常:\n" + ex.Message, "注意", MessageBoxButtons.AbortRetryIgnore))
                             {
-                                try
-                                {
-                                    file = targetfiles[i];
-                                    originname = file.Substring(0, file.Length - 4);
-                                    FileMethod.RenameFile(file, originname);
-                                    cc++;
-                                    i++;
-                                }
-                                catch (Exception ex)
-                                {
-                                    switch (MessageBox.Show("处理文件\"" + file + "\"时出现异常:\n" + ex.Message, "注意", MessageBoxButtons.AbortRetryIgnore))
-                                    {
-                                        case System.Windows.Forms.DialogResult.Ignore: i++; continue;
-                                        case System.Windows.Forms.DialogResult.Retry: continue;
-                                        case System.Windows.Forms.DialogResult.Abort: break;
-                                    }
-                                }
+                                case System.Windows.Forms.DialogResult.Ignore: i++; LocalLog.WhriteLog(file + "\r\n\t" + ex.Message + "\r\n\tIgnore;"); continue;
+                                case System.Windows.Forms.DialogResult.Retry: continue;
+                                case System.Windows.Forms.DialogResult.Abort: LocalLog.WhriteLog(file + "\r\n\t" + ex.Message + "\r\n\tAbort;"); return;
                             }
+                            
                         }
                     }
                 }
@@ -288,24 +233,23 @@ namespace EncodingConvertTool
                 this.Invoke(new Action(convertEndInit));
             }
         }
-        private int cc = 0;
+        private int currentCount = 0;
         private void waitThreadMethod(object o)
         {
             int count = Convert.ToInt32(o);
             while (true)
             {
                 Thread.Sleep(200);
-                this.Invoke(new Action(() => { progressBar1.Value = cc * 100 / count; }));
+                this.Invoke(new Action(() => { progressBar1.Value = currentCount * 100 / count; }));
             }
         }
         private void btnCancel_Click(object sender, EventArgs e)
         {
             this.Close();
         }
-
         private void comboMode_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (comboMode.Text == "还原")
+            if (comboMode.Text == "还原模式")
             {
                 this.ckbIntelligence.Enabled = false;
                 this.comboType.Enabled = false;
@@ -335,7 +279,7 @@ namespace EncodingConvertTool
         }
         private void BatProcessForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (convertThread!=null&&convertThread.ThreadState != ThreadState.Aborted)
+            if (convertThread != null && convertThread.ThreadState != ThreadState.Aborted && convertThread.ThreadState!= ThreadState.Stopped)
             {
                 abortConvertThread();
                 e.Cancel = true;

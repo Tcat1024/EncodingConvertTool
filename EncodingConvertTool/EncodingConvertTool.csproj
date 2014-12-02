@@ -56,7 +56,9 @@
     <Compile Include="CustomDrawCheckListBox.Designer.cs">
       <DependentUpon>CustomDrawCheckListBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="Encode.cs" />
     <Compile Include="FileMethod.cs" />
+    <Compile Include="LocalLog.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
