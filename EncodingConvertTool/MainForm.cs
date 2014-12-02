@@ -14,6 +14,7 @@ namespace EncodingConvertTool
     {
         string currentfilpath = "";
         bool currentchanged = false;
+        EncodeType[] typelist;
         public MainForm()
         {
             InitializeComponent();
@@ -24,9 +25,9 @@ namespace EncodingConvertTool
         }
         private void initMenu()
         {
-            var templist = EncodeType.GetKnownTypeList();
+            typelist = EncodeType.GetKnownTypeList();
             ToolStripItem tempItem;
-            foreach(var item in templist)
+            foreach (var item in typelist)
             {
                 tempItem = new ToolStripMenuItem(item.Name + "->" + "中文");
                 tempItem.Tag = item;
@@ -48,19 +49,10 @@ namespace EncodingConvertTool
             if (checkChanged())
             {
                 var filenames = (Array)e.Data.GetData(DataFormats.FileDrop);
-                InitTextBoard(openFile(filenames.GetValue(0).ToString()));
+                InitTextBoard(FileMethod.OpenFile(currentfilpath = filenames.GetValue(0).ToString()));
             }
         }
-        private string openFile(string filepath)
-        {
-            currentfilpath = filepath;
-            using (StreamReader sr = new StreamReader(filepath, Encoding.Default))
-            {
-                string temp = sr.ReadToEnd();
-                sr.Close();
-                return temp;
-            }
-        }
+
         private bool initing = false;
         private void InitTextBoard(string target)
         {
@@ -68,17 +60,7 @@ namespace EncodingConvertTool
             this.mainTextBoard.Text = target;
             currentchanged = false;
         }
-        private void saveFile(string filepath, string source)
-        {
-            if (filepath.Trim() == "")
-                throw new Exception("并未打开任何文件");
-            using (StreamWriter wr = new StreamWriter(filepath, false, Encoding.Default))
-            {
-                wr.Write(source);
-                wr.Close();
-                currentchanged = false;
-            }
-        }
+
         private void btnSaveAs_Click(object sender, EventArgs e)
         {
             SaveFileDialog sfd = new SaveFileDialog();
@@ -91,7 +73,8 @@ namespace EncodingConvertTool
             {
                 try
                 {
-                    saveFile(sfd.FileName, this.mainTextBoard.Text);
+                    FileMethod.SaveFile(sfd.FileName, this.mainTextBoard.Text);
+                    currentchanged = false;
                     currentfilpath = sfd.FileName;
                 }
                 catch (Exception ex)
@@ -102,10 +85,8 @@ namespace EncodingConvertTool
         }
         private void btnIntelligence_Click(object sender, EventArgs e)
         {
-            btnIntelligence.Checked = !btnIntelligence.Checked;
             menuConfig.DropDown.AutoClose = true;
         }
-
         private void menuConfig_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
             menuConfig.DropDown.AutoClose = false;
@@ -124,7 +105,7 @@ namespace EncodingConvertTool
             {
                 try
                 {
-                    InitTextBoard(openFile(opd.FileName));
+                    InitTextBoard(FileMethod.OpenFile(currentfilpath = opd.FileName));
                     currentfilpath = opd.FileName;
                 }
                 catch (Exception ex)
@@ -137,7 +118,9 @@ namespace EncodingConvertTool
         {
             try
             {
-                saveFile(currentfilpath, this.mainTextBoard.Text);
+                FileMethod.SaveFile(currentfilpath, this.mainTextBoard.Text);
+
+                currentchanged = false;
             }
             catch (Exception ex)
             {
@@ -146,24 +129,20 @@ namespace EncodingConvertTool
         }
         private void btnAllowQOpen_Click(object sender, EventArgs e)
         {
-            btnAllowQOpen.Checked = !btnAllowQOpen.Checked;
             menuConfig.DropDown.AutoClose = true;
         }
-
         private void btnEncodeConvert_Click(object sender, EventArgs e)
         {
             string source = this.mainTextBoard.Text;
             if (source.Trim() == "")
                 return;
-            string result = (this.comboMode.SelectedItem as EncodeConvertMode).Convert(source, (sender as ToolStripItem).Tag as EncodeType);
+            string result = (this.comboMode.SelectedItem as EncodeConvertMode).Convert(source, (sender as ToolStripItem).Tag as EncodeType,this.btnIntelligence.Checked);
             this.mainTextBoard.Text = result;
         }
-
         private void btnClose_Click(object sender, EventArgs e)
         {
             this.Close();
         }
-
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (!checkChanged())
@@ -180,7 +159,8 @@ namespace EncodingConvertTool
                         {
                             try
                             {
-                                saveFile(currentfilpath, this.mainTextBoard.Text);
+                                FileMethod.SaveFile(currentfilpath, this.mainTextBoard.Text);
+                                currentchanged = false;
                             }
                             catch (Exception ex)
                             {
@@ -203,6 +183,12 @@ namespace EncodingConvertTool
             else
                 initing = false;
         }
+
+        private void btnBatPro_Click(object sender, EventArgs e)
+        {
+            BatProcessForm configForm = new BatProcessForm(this.comboMode.Items,this.typelist);
+            configForm.Show();
+        }
     }
     public abstract class EncodeConvertMode
     {
@@ -212,7 +198,7 @@ namespace EncodingConvertTool
         {
             return this.Name;
         }
-        public abstract string Convert(string source, EncodeType encode);
+        public abstract string Convert(string source, EncodeType encode,bool check);
         public static string[] GetKnownModeNameList()
         {
             List<string> result = new List<string>();
@@ -275,61 +261,100 @@ namespace EncodingConvertTool
 
 
 
-        [CNName("cue")]
-        public static EncodeConvertMode Cue { get { return _Cue != null ? _Cue : _Cue = new CueEncodeConvertMode() { _Name = "cue" }; } }
+        [CNName("cue模式")]
+        public static EncodeConvertMode Cue { get { return _Cue != null ? _Cue : _Cue = new CueEncodeConvertMode() { _Name = "cue模式" }; } }
         private static EncodeConvertMode _Cue;
         private class CueEncodeConvertMode : EncodeConvertMode
         {
-            public override string Convert(string source, EncodeType encode)
+            public override string Convert(string source, EncodeType encode,bool check)
             {
                 int i, count;
                 string result = "";
                 string cod;
                 var ps = source.Split('"');
                 count = ps.Length;
-                for (i = 0; i < count - 1; i++)
+                if (check)
                 {
+                    for (i = 0; i < count - 1; i++)
+                    {
+                        if (encode.Check(ps[i]))
+                        {
+                            cod = encode.Encode.GetString(Encoding.Default.GetBytes(ps[i]));
+                            ps[i] = cod;
+                        }
+                        result += ps[i] + "\"";
+                    }
                     if (encode.Check(ps[i]))
                     {
                         cod = encode.Encode.GetString(Encoding.Default.GetBytes(ps[i]));
                         ps[i] = cod;
                     }
-                    result += ps[i] + "\"";
+                    result += ps[i];
                 }
-                if (encode.Check(ps[i]))
+                else
                 {
+                    for (i = 0; i < count - 1; i++)
+                    {
+                        cod = encode.Encode.GetString(Encoding.Default.GetBytes(ps[i]));
+                        ps[i] = cod;
+                        result += ps[i] + "\"";
+                    }
                     cod = encode.Encode.GetString(Encoding.Default.GetBytes(ps[i]));
                     ps[i] = cod;
+                    result += ps[i];
                 }
-                result += ps[i];
                 return result;
             }
         }
-        [CNName("默认")]
-        public static EncodeConvertMode Default { get { return _Default != null ? _Default : _Default = new DefaultEncodeConvertMode() { _Name = "默认" }; } }
-        private static EncodeConvertMode _Default;
-        private class DefaultEncodeConvertMode : EncodeConvertMode
+        [CNName("逐字转换")]
+        public static EncodeConvertMode WFW { get { return _WFW != null ? _WFW : _WFW = new WFWEncodeConvertMode() { _Name = "逐字转换" }; } }
+        private static EncodeConvertMode _WFW;
+        private class WFWEncodeConvertMode : EncodeConvertMode
         {
-            public override string Convert(string source, EncodeType encode)
+            public override string Convert(string source, EncodeType encode, bool check)
             {
                 int i, count;
                 string result = "";
                 string cod;
                 count = source.Length;
-                for (i = 0; i < count; i++)
-                {
-                    if (encode.Check(source[i]))
+                if (check)
+                    for (i = 0; i < count; i++)
+                    {
+                        if (encode.Check(source[i]))
+                        {
+                            cod = encode.Encode.GetString(Encoding.Default.GetBytes(new char[] { source[i] }));
+                            result += cod;
+                        }
+                        else
+                            result += source[i];
+                    }
+                else
+                    for (i = 0; i < count; i++)
                     {
                         cod = encode.Encode.GetString(Encoding.Default.GetBytes(new char[] { source[i] }));
                         result += cod;
                     }
-                    else
-                        result += source[i];
-                }
                 return result;
             }
         }
-
+        [CNName("整体转换")]
+        public static EncodeConvertMode Whole { get { return _Whole != null ? _Whole : _Whole = new WFWEncodeConvertMode() { _Name = "整体转换" }; } }
+        private static EncodeConvertMode _Whole;
+        private class WholeEncodeConvertMode : EncodeConvertMode
+        {
+            public override string Convert(string source, EncodeType encode, bool check)
+            {
+                string result = "";
+                if (check)
+                        if (encode.Check(source))
+                            result = encode.Encode.GetString(Encoding.Default.GetBytes(source));
+                        else
+                            result = source;
+                else
+                    result = encode.Encode.GetString(Encoding.Default.GetBytes(source));
+                return result;
+            }
+        }
     }
     public abstract class EncodeType
     {
@@ -492,31 +517,31 @@ namespace EncodingConvertTool
                         if ((0x81 <= firstByte && firstByte <= 0x9F || 0xE0 <= firstByte && firstByte <= 0xEF)
                                 && (0x40 <= secondByte && secondByte <= 0x7E || 0x80 <= secondByte && secondByte <= 0xFC))
                         {
-                            String sHex = firstByte.ToString("x") + secondByte.ToString("x");
-                            int code = Convert.ToInt32(sHex, 16);
-                            if (0x81AD <= code && code <= 0x81B7
-                                    || 0x81C0 <= code && code <= 0x81C7
-                                    || 0x81CF <= code && code <= 0x81D9
-                                    || 0x81E9 <= code && code <= 0x81EF
-                                    || 0x81F8 <= code && code <= 0x81FC
-                                    || 0x8240 <= code && code <= 0x824e
-                                    || 0x8259 <= code && code <= 0x825f
-                                    || 0x827A <= code && code <= 0x8280
-                                    || 0x829B <= code && code <= 0x829E
-                                    || 0x82F2 <= code && code <= 0x82FC
-                                    || 0x8397 <= code && code <= 0x839E
-                                    || 0x83B7 <= code && code <= 0x83BE
-                                    || 0x83D7 <= code && code <= 0x83FC
-                                    || 0x8461 <= code && code <= 0x846F
-                                    || 0x8492 <= code && code <= 0x849E
-                                    || 0x84BF <= code && code <= 0x84FC
-                                    || 0x8540 <= code && code <= 0x889E
-                                    || 0x9873 <= code && code <= 0x989E
-                                    || 0xEBA5 <= code && code <= 0xEBFC
-                                    || 0xEB40 <= code && code <= 0xEFFC)
-                            {
-                                return false;
-                            }
+                            //String sHex = firstByte.ToString("x") + secondByte.ToString("x");
+                            //int code = Convert.ToInt32(sHex, 16);
+                            //if (0x81AD <= code && code <= 0x81B7
+                            //        || 0x81C0 <= code && code <= 0x81C7
+                            //        || 0x81CF <= code && code <= 0x81D9
+                            //        || 0x81E9 <= code && code <= 0x81EF
+                            //        || 0x81F8 <= code && code <= 0x81FC
+                            //        || 0x8240 <= code && code <= 0x824e
+                            //        || 0x8259 <= code && code <= 0x825f
+                            //        || 0x827A <= code && code <= 0x8280
+                            //        || 0x829B <= code && code <= 0x829E
+                            //        || 0x82F2 <= code && code <= 0x82FC
+                            //        || 0x8397 <= code && code <= 0x839E
+                            //        || 0x83B7 <= code && code <= 0x83BE
+                            //        || 0x83D7 <= code && code <= 0x83FC
+                            //        || 0x8461 <= code && code <= 0x846F
+                            //        || 0x8492 <= code && code <= 0x849E
+                            //        || 0x84BF <= code && code <= 0x84FC
+                            //    //|| 0x8540 <= code && code <= 0x889E
+                            //        || 0x9873 <= code && code <= 0x989E
+                            //        || 0xEBA5 <= code && code <= 0xEBFC
+                            //        || 0xEB40 <= code && code <= 0xEFFC)
+                            //{
+                            //    return false;
+                            //}
                         }
                         else
                         {

@@ -7,3 +7,5 @@ C:\Users\Tcat\Desktop\WorkSpace\Program\EncodingConvertTool\EncodingConvertTool\
 C:\Users\Tcat\Desktop\WorkSpace\Program\EncodingConvertTool\EncodingConvertTool\obj\Debug\EncodingConvertTool.csproj.GenerateResource.Cache
 C:\Users\Tcat\Desktop\WorkSpace\Program\EncodingConvertTool\EncodingConvertTool\obj\Debug\EncodingConvertTool.exe
 C:\Users\Tcat\Desktop\WorkSpace\Program\EncodingConvertTool\EncodingConvertTool\obj\Debug\EncodingConvertTool.pdb
+C:\Users\Tcat\Desktop\WorkSpace\Program\EncodingConvertTool\EncodingConvertTool\obj\Debug\EncodingConvertTool.test.resources
+C:\Users\Tcat\Desktop\WorkSpace\Program\EncodingConvertTool\EncodingConvertTool\obj\Debug\EncodingConvertTool.BatProcessForm.resources

@@ -39,7 +39,7 @@
             this.撤销ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.重做ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuTool = new System.Windows.Forms.ToolStripMenuItem();
-            this.批处理ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnBatPro = new System.Windows.Forms.ToolStripMenuItem();
             this.menuConfig = new System.Windows.Forms.ToolStripMenuItem();
             this.btnIntelligence = new System.Windows.Forms.ToolStripMenuItem();
             this.btnAllowQOpen = new System.Windows.Forms.ToolStripMenuItem();
@@ -88,28 +88,28 @@
             // btnOpen
             // 
             this.btnOpen.Name = "btnOpen";
-            this.btnOpen.Size = new System.Drawing.Size(162, 24);
+            this.btnOpen.Size = new System.Drawing.Size(120, 24);
             this.btnOpen.Text = "打开";
             this.btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
             // 
             // btnSave
             // 
             this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(162, 24);
+            this.btnSave.Size = new System.Drawing.Size(120, 24);
             this.btnSave.Text = "保存";
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 
             // btnSaveAs
             // 
             this.btnSaveAs.Name = "btnSaveAs";
-            this.btnSaveAs.Size = new System.Drawing.Size(162, 24);
+            this.btnSaveAs.Size = new System.Drawing.Size(120, 24);
             this.btnSaveAs.Text = "另存为";
             this.btnSaveAs.Click += new System.EventHandler(this.btnSaveAs_Click);
             // 
             // btnClose
             // 
             this.btnClose.Name = "btnClose";
-            this.btnClose.Size = new System.Drawing.Size(162, 24);
+            this.btnClose.Size = new System.Drawing.Size(120, 24);
             this.btnClose.Text = "退出";
             this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
             // 
@@ -137,16 +137,17 @@
             // menuTool
             // 
             this.menuTool.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.批处理ToolStripMenuItem});
+            this.btnBatPro});
             this.menuTool.Name = "menuTool";
             this.menuTool.Size = new System.Drawing.Size(49, 24);
             this.menuTool.Text = "工具";
             // 
-            // 批处理ToolStripMenuItem
+            // btnBatPro
             // 
-            this.批处理ToolStripMenuItem.Name = "批处理ToolStripMenuItem";
-            this.批处理ToolStripMenuItem.Size = new System.Drawing.Size(162, 24);
-            this.批处理ToolStripMenuItem.Text = "批处理";
+            this.btnBatPro.Name = "btnBatPro";
+            this.btnBatPro.Size = new System.Drawing.Size(120, 24);
+            this.btnBatPro.Text = "批处理";
+            this.btnBatPro.Click += new System.EventHandler(this.btnBatPro_Click);
             // 
             // menuConfig
             // 
@@ -173,6 +174,7 @@
             // btnAllowQOpen
             // 
             this.btnAllowQOpen.Checked = true;
+            this.btnAllowQOpen.CheckOnClick = true;
             this.btnAllowQOpen.CheckState = System.Windows.Forms.CheckState.Checked;
             this.btnAllowQOpen.Name = "btnAllowQOpen";
             this.btnAllowQOpen.Size = new System.Drawing.Size(181, 24);
@@ -237,7 +239,7 @@
         private System.Windows.Forms.ToolStripMenuItem 撤销ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 重做ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem menuTool;
-        private System.Windows.Forms.ToolStripMenuItem 批处理ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem btnBatPro;
         private System.Windows.Forms.ToolStripMenuItem btnAllowQOpen;
         private System.Windows.Forms.ToolStripMenuItem 帮助ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 说明ToolStripMenuItem;

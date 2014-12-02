@@ -44,6 +44,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BatProcessForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BatProcessForm.Designer.cs">
+      <DependentUpon>BatProcessForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomDrawCheckListBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="CustomDrawCheckListBox.Designer.cs">
+      <DependentUpon>CustomDrawCheckListBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FileMethod.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -58,6 +71,15 @@
     <Compile Include="SaveMessageBox.Designer.cs">
       <DependentUpon>SaveMessageBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="test.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="test.Designer.cs">
+      <DependentUpon>test.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="BatProcessForm.resx">
+      <DependentUpon>BatProcessForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -73,6 +95,9 @@
     </Compile>
     <EmbeddedResource Include="SaveMessageBox.resx">
       <DependentUpon>SaveMessageBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="test.resx">
+      <DependentUpon>test.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
