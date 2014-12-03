@@ -21,7 +21,7 @@ namespace EncodingConvertTool
         {
             if (filepath.Trim() == "")
                 throw new Exception("未打开任何文件");
-            using (StreamWriter wr = new StreamWriter(filepath, false, Encoding.Default))
+            using (StreamWriter wr = new StreamWriter(filepath, false, Encoding.UTF8))
             {
                 wr.Write(source);
                 wr.Close();
